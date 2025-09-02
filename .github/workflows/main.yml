@@ -84,7 +84,7 @@ jobs:
         username: ${{ secrets.USER }}
         password: ${{ secrets.SSH_PASSWORD }}
         script: |
-          cd resume_service
+          cd dev/resume_service
           sudo docker compose pull
           sudo docker compose down
           sudo docker compose up -d
