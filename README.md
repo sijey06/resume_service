@@ -18,14 +18,20 @@
 ## Как развернуть проект:
 Для развертывания проекта убедитесь что у вас установлен Docker.
 В командной строке выполните следующие команды:
-```docker compose up --build```
-```docker exec -it resume_backend alembic upgrade head```
+```
+docker compose up --build
+docker exec -it resume_backend alembic upgrade head
+```
 ## Адрес сайта:
 https://inspar.ru/
 ## Документация:
 Документация находится по адресу:
-`https://inspar.ru/docs` - Swagger
-`https://inspar.ru/redoc` - Redoc
+```
+https://inspar.ru/api/docs # Swagger
+```
+```
+https://inspar.ru/api/redoc # Redoc
+```
 ## Автор:
 ### Игорь Журавлев
 Ссылка на GitHub:

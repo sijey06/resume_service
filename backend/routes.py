@@ -15,7 +15,7 @@ from schemas import (ResumeCreate, ResumeInDB, ResumeUpdate, TokenData,
 router = APIRouter()
 
 
-@router.post('/api/register', summary='Регистрация',
+@router.post('/register', summary='Регистрация',
              description='Регистрация нового пользователя.', tags=['Users'])
 async def register(user: UserCreate, db: Session = Depends(get_db)):
     """Регистрация нового пользователя."""
@@ -32,7 +32,7 @@ async def register(user: UserCreate, db: Session = Depends(get_db)):
     return {'message': 'Пользователь создан.'}
 
 
-@router.post('/api/login', summary='Аутентификация',
+@router.post('/login', summary='Аутентификация',
              description='Получение JWT-токена.',
              response_model=TokenData, tags=['Auth'])
 async def login(form_data: UserCreate, db: Session = Depends(get_db)):
@@ -48,7 +48,7 @@ async def login(form_data: UserCreate, db: Session = Depends(get_db)):
     return {'access_token': access_token, 'token_type': 'bearer'}
 
 
-@router.post('/api/resume/', summary='Создание резюме',
+@router.post('/resume/', summary='Создание резюме',
              description='Создание нового резюме.',
              response_model=ResumeInDB, tags=['Resumes'])
 async def create_resume(resume: ResumeCreate,
@@ -65,7 +65,7 @@ async def create_resume(resume: ResumeCreate,
     return db_resume
 
 
-@router.get('/api/resume/', summary='Список резюме',
+@router.get('/resume/', summary='Список резюме',
             description='Получение списка резюме пользователя.',
             response_model=List[ResumeInDB], tags=['Resumes'])
 async def read_user_resumes(current_user=Depends(oauth2_scheme),
@@ -78,7 +78,7 @@ async def read_user_resumes(current_user=Depends(oauth2_scheme),
     return resumes
 
 
-@router.get('/api/resume/{resume_id}/', summary='Просмотр резюме',
+@router.get('/resume/{resume_id}/', summary='Просмотр резюме',
             description='Получение одного резюме.',
             response_model=ResumeInDB, tags=['Resumes'])
 async def read_resume(resume_id: int, current_user=Depends(oauth2_scheme),
@@ -93,7 +93,7 @@ async def read_resume(resume_id: int, current_user=Depends(oauth2_scheme),
     return resume
 
 
-@router.put('/api/resume/{resume_id}/', summary='Редактирование резюме',
+@router.put('/resume/{resume_id}/', summary='Редактирование резюме',
             description='Редактирование существующего резюме.',
             response_model=ResumeInDB, tags=['Resumes'])
 async def update_resume(resume_id: int, updated_resume: ResumeUpdate,
@@ -115,7 +115,7 @@ async def update_resume(resume_id: int, updated_resume: ResumeUpdate,
     return resume
 
 
-@router.delete('/api/resume/{resume_id}/', summary='Удаление резюме',
+@router.delete('/resume/{resume_id}/', summary='Удаление резюме',
                description='Удаление существующего резюме.', tags=['Resumes'])
 async def delete_resume(resume_id: int, current_user=Depends(oauth2_scheme),
                         db: Session = Depends(get_db)):
@@ -132,7 +132,7 @@ async def delete_resume(resume_id: int, current_user=Depends(oauth2_scheme),
     return {'detail': 'Резюме удалено.'}
 
 
-@router.post('/api/resume/{resume_id}/improve', summary='Улучшение резюме',
+@router.post('/resume/{resume_id}/improve', summary='Улучшение резюме',
              description='Возвращение улучшенной версии резюме.',
              tags=['Resumes'])
 async def improve_resume(resume_id: int, current_user=Depends(oauth2_scheme),
