@@ -27,7 +27,7 @@ class ResumeHistory(Base):
     __tablename__ = 'resume_history'
     id = Column(Integer, primary_key=True, index=True)
     content = Column(String, nullable=False)
-    resume_id = Column(Integer, ForeignKey('resumes.id'))
+    resume_id = Column(Integer, ForeignKey('resumes.id', ondelete='CASCADE'))
     resume = relationship('Resume', back_populates='history')
 
 
