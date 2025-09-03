@@ -34,5 +34,16 @@ class ResumeInDB(ResumeBase):
     owner_id: int
     history: Optional[List['ResumeHistory']] = []
 
+    @classmethod
+    def from_orm(cls, obj):
+        history_dicts = [{'content': h.content} for h in obj.history]
+        return cls(
+            id=obj.id,
+            owner_id=obj.owner_id,
+            title=obj.title,
+            content=obj.content,
+            history=history_dicts
+        )
+
     class Config:
         from_attributes = True
