@@ -8,7 +8,7 @@ from auth import (create_access_token, decode_token, get_password_hash,
                   oauth2_scheme, verify_password)
 from constants import ACCESS_TOKEN_EXPIRE_MINUTES
 from database import get_db, get_resume_by_id_and_owner
-from models import Resume, User
+from models import Resume, ResumeHistory, User
 from schemas import (ResumeCreate, ResumeInDB, ResumeUpdate, TokenData,
                      UserCreate)
 
@@ -23,6 +23,9 @@ async def register(user: UserCreate, db: Session = Depends(get_db)):
     if existing_user:
         raise HTTPException(status_code=400,
                             detail='Email уже зарегистрирован')
+    if len(user.password) < 8 or len(user.password) > 32:
+        raise HTTPException(status_code=400,
+                            detail='Пароль должен быть от 8 до 32 символов')
 
     new_user = User(email=user.email,
                     password=get_password_hash(user.password))
@@ -46,6 +49,23 @@ async def login(form_data: UserCreate, db: Session = Depends(get_db)):
     access_token = create_access_token(data={'sub': str(user.id)},
                                        expires_delta=access_token_expires)
     return {'access_token': access_token, 'token_type': 'bearer'}
+
+
+@router.get('/check-token', summary='Проверка токена',
+            description='Проверка действительности токена.', tags=['Auth'])
+async def check_token(current_user=Depends(oauth2_scheme),
+                      db: Session = Depends(get_db)):
+    try:
+        decoded_token = decode_token(current_user)
+        user_id = decoded_token['sub']
+        user = db.query(User).filter(User.id == user_id).first()
+        if user:
+            return {"isValid": True, "email": user.email}
+        else:
+            raise HTTPException(status_code=401,
+                                detail='Пользователь не найден.')
+    except Exception as err:
+        raise HTTPException(status_code=401, detail=str(err))
 
 
 @router.post('/resume/', summary='Создание резюме',
@@ -137,12 +157,16 @@ async def delete_resume(resume_id: int, current_user=Depends(oauth2_scheme),
              tags=['Resumes'])
 async def improve_resume(resume_id: int, current_user=Depends(oauth2_scheme),
                          db: Session = Depends(get_db)):
-    """Улучшаем текст резюме путём добавления суффикса '[Improved]'"""
+    """Улучшение текста резюме путём добавления суффикса '[Improved]'"""
     decoded_token = decode_token(current_user)
     user_id = decoded_token['sub']
     resume = get_resume_by_id_and_owner(resume_id, user_id, db)
     if not resume:
         raise HTTPException(status_code=404, detail='Резюме не найдено.')
     improved_text = f'{resume.content.strip()} [Improved]'
-
-    return {'improved_resume': improved_text}
+    old_version = ResumeHistory(content=resume.content, resume_id=resume.id)
+    db.add(old_version)
+    resume.content = improved_text
+    db.commit()
+    db.refresh(resume)
+    return ResumeInDB.from_orm(resume)

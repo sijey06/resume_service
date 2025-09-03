@@ -15,7 +15,7 @@ const EditResumePage = () => {
       const token = localStorage.getItem('token');
       const headers = { Authorization: `Bearer ${token}` };
       try {
-        const response = await axios.get(`/api/resume/${resumeId}`, { headers });
+        const response = await axios.get(`/api/resume/${resumeId}/`, { headers });
         setResume(response.data);
         setLoading(false);
       } catch (err) {
@@ -31,7 +31,7 @@ const EditResumePage = () => {
     const token = localStorage.getItem('token');
     const headers = { Authorization: `Bearer ${token}` };
     try {
-      await axios.put(`/api/resume/${resumeId}`, resume, { headers });
+      await axios.put(`/api/resume/${resumeId}/`, resume, { headers });
       navigate('/');
     } catch (err) {
       alert('Ошибка обновления резюме');

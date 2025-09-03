@@ -9,9 +9,12 @@ const ViewResumePage = () => {
   const [resume, setResume] = useState(null);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
+  const [improvedContent, setImprovedContent] = useState('');
+  const [showConfirmationButtons, setShowConfirmationButtons] = useState(false);
+  const [history, setHistory] = useState([]);
 
   useEffect(() => {
-    const fetchResume = async () => {
+    const fetchResumeWithHistory = async () => {
       const token = localStorage.getItem('token');
       const headers = { Authorization: `Bearer ${token}` };
       try {
@@ -23,7 +26,7 @@ const ViewResumePage = () => {
         setLoading(false);
       }
     };
-    fetchResume();
+    fetchResumeWithHistory();
   }, [resumeId]);
 
   const handleEdit = () => {
@@ -48,16 +51,10 @@ const ViewResumePage = () => {
     const token = localStorage.getItem('token');
     const headers = { Authorization: `Bearer ${token}` };
     try {
-      const response = await axios.post(
-        `/api/resume/${resumeId}/improve`,
-        { title: resume.title, content: resume.content },
-        { headers }
-      );
-      if (response.data.improved_resume) {
-        setResume({
-          title: resume.title,
-          content: response.data.improved_resume,
-        });
+      const response = await axios.post(`/api/resume/${resumeId}/improve`, {}, { headers });
+      if (response.data) {
+        setImprovedContent(response.data.content);
+        setShowConfirmationButtons(true);
       } else {
         alert('Ошибка улучшения резюме: Данные не получены');
       }
@@ -66,17 +63,47 @@ const ViewResumePage = () => {
     }
   };
 
+  const handleSaveChanges = () => {
+    setResume({ ...resume, content: improvedContent });
+    setHistory([...history, { content: improvedContent }]);
+    setImprovedContent('');
+    setShowConfirmationButtons(false);
+  };
+
+  const handleCancel = () => {
+    setImprovedContent('');
+    setShowConfirmationButtons(false);
+  };
+
   if (loading) return <div>Загрузка...</div>;
   if (errorMessage) return <Alert variant="danger">{errorMessage}</Alert>;
 
   return (
     <Container className="mt-5">
       <Card className="w-50 mx-auto p-4 shadow-sm rounded">
-        <Card.Header>
-          <h2>{resume?.title || ''}</h2>
-        </Card.Header>
+        <Card.Header><h2>{resume?.title || ''}</h2></Card.Header>
         <Card.Body>
           <p>{resume?.content || ''}</p>
+          {resume?.history && resume.history.length > 0 && (
+            <>
+              <hr/>
+              <h4>История изменений:</h4>
+              <ul style={{ listStyleType: 'none' }}>
+                {resume.history.map((item, idx) => (
+                  <li key={idx}>{item.content}</li>
+                ))}
+              </ul>
+            </>
+          )}
+          {showConfirmationButtons && (
+            <>
+              <hr/>
+              <h4>Улучшенное резюме:</h4>
+              <p>{improvedContent}</p>
+              <Button variant="primary" size="sm" onClick={handleSaveChanges}>Сохранить</Button> 
+              <Button variant="secondary" size="sm" onClick={handleCancel}>Отменить</Button>
+            </>
+          )}
         </Card.Body>
         <Card.Footer>
           <Button variant="primary" size="sm" onClick={handleImprove}>Улучшить</Button>

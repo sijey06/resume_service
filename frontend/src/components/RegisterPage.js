@@ -6,6 +6,7 @@ const RegisterPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showAlert, setShowAlert] = useState(false);
+  const [alertText, setAlertText] = useState('');
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -13,7 +14,8 @@ const RegisterPage = () => {
       await axios.post('/api/register', { email, password });
       window.location.href = '/';
     } catch (err) {
-      console.error(err.response ? err.response.data.detail : err.message);
+      const errorDetail = err.response ? err.response.data.detail : 'Ошибка регистрации';
+      setAlertText(errorDetail);
       setShowAlert(true);
     }
   };
@@ -48,7 +50,7 @@ const RegisterPage = () => {
 
             {showAlert && (
               <Alert variant="danger" onClose={() => setShowAlert(false)} dismissible>
-                Ошибка регистрации
+                {alertText}
               </Alert>
             )}
 
