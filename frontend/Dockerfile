@@ -1,7 +1,7 @@
 FROM node:22.19.0-slim AS builder
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci --production=false
+RUN npm ci --production
 COPY . .
 RUN npm run build
 
